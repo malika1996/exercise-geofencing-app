@@ -8,22 +8,26 @@
 
 /* Begin PBXBuildFile section */
 		22F6538F23389ACF00983B92 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F6538E23389ACF00983B92 /* AppDelegate.swift */; };
-		22F6539123389ACF00983B92 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F6539023389ACF00983B92 /* ViewController.swift */; };
+		22F6539123389ACF00983B92 /* AddGeoRegionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F6539023389ACF00983B92 /* AddGeoRegionViewController.swift */; };
 		22F6539423389ACF00983B92 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 22F6539223389ACF00983B92 /* Main.storyboard */; };
-		22F6539723389ACF00983B92 /* GeofencingApp.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 22F6539523389ACF00983B92 /* GeofencingApp.xcdatamodeld */; };
 		22F6539923389AD000983B92 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 22F6539823389AD000983B92 /* Assets.xcassets */; };
 		22F6539C23389AD000983B92 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 22F6539A23389AD000983B92 /* LaunchScreen.storyboard */; };
+		22F653A42338B48A00983B92 /* GeoRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F653A32338B48A00983B92 /* GeoRegion.swift */; };
+		22F653A62338B59A00983B92 /* GeoRegionsOnMapViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F653A52338B59A00983B92 /* GeoRegionsOnMapViewController.swift */; };
+		22F653A82339F33A00983B92 /* Utilities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22F653A72339F33A00983B92 /* Utilities.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		22F6538B23389ACF00983B92 /* GeofencingApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GeofencingApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22F6538E23389ACF00983B92 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		22F6539023389ACF00983B92 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		22F6539023389ACF00983B92 /* AddGeoRegionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddGeoRegionViewController.swift; sourceTree = "<group>"; };
 		22F6539323389ACF00983B92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		22F6539623389ACF00983B92 /* GeofencingApp.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = GeofencingApp.xcdatamodel; sourceTree = "<group>"; };
 		22F6539823389AD000983B92 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		22F6539B23389AD000983B92 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		22F6539D23389AD000983B92 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		22F653A32338B48A00983B92 /* GeoRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoRegion.swift; sourceTree = "<group>"; };
+		22F653A52338B59A00983B92 /* GeoRegionsOnMapViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeoRegionsOnMapViewController.swift; sourceTree = "<group>"; };
+		22F653A72339F33A00983B92 /* Utilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utilities.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,15 +60,41 @@
 		22F6538D23389ACF00983B92 /* GeofencingApp */ = {
 			isa = PBXGroup;
 			children = (
+				22F653AB233A0E9100983B92 /* Utility */,
+				22F653AA233A0E7B00983B92 /* Model */,
+				22F653A9233A0E6800983B92 /* Controller */,
 				22F6538E23389ACF00983B92 /* AppDelegate.swift */,
-				22F6539023389ACF00983B92 /* ViewController.swift */,
 				22F6539223389ACF00983B92 /* Main.storyboard */,
 				22F6539823389AD000983B92 /* Assets.xcassets */,
 				22F6539A23389AD000983B92 /* LaunchScreen.storyboard */,
 				22F6539D23389AD000983B92 /* Info.plist */,
-				22F6539523389ACF00983B92 /* GeofencingApp.xcdatamodeld */,
 			);
 			path = GeofencingApp;
+			sourceTree = "<group>";
+		};
+		22F653A9233A0E6800983B92 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				22F653A52338B59A00983B92 /* GeoRegionsOnMapViewController.swift */,
+				22F6539023389ACF00983B92 /* AddGeoRegionViewController.swift */,
+			);
+			path = Controller;
+			sourceTree = "<group>";
+		};
+		22F653AA233A0E7B00983B92 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				22F653A32338B48A00983B92 /* GeoRegion.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		22F653AB233A0E9100983B92 /* Utility */ = {
+			isa = PBXGroup;
+			children = (
+				22F653A72339F33A00983B92 /* Utilities.swift */,
+			);
+			path = Utility;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,9 +168,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				22F6539123389ACF00983B92 /* ViewController.swift in Sources */,
-				22F6539723389ACF00983B92 /* GeofencingApp.xcdatamodeld in Sources */,
+				22F6539123389ACF00983B92 /* AddGeoRegionViewController.swift in Sources */,
 				22F6538F23389ACF00983B92 /* AppDelegate.swift in Sources */,
+				22F653A62338B59A00983B92 /* GeoRegionsOnMapViewController.swift in Sources */,
+				22F653A82339F33A00983B92 /* Utilities.swift in Sources */,
+				22F653A42338B48A00983B92 /* GeoRegion.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,19 +372,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		22F6539523389ACF00983B92 /* GeofencingApp.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				22F6539623389ACF00983B92 /* GeofencingApp.xcdatamodel */,
-			);
-			currentVersion = 22F6539623389ACF00983B92 /* GeofencingApp.xcdatamodel */;
-			path = GeofencingApp.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 22F6538323389ACF00983B92 /* Project object */;
 }
