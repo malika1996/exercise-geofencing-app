@@ -183,8 +183,10 @@ extension GeoRegionsOnMapViewController: AddGeoRegionDelegate {
 
     func addGeoRegionViewController(_ controller: AddGeoRegionViewController, didAddCoordinate coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType) {
         controller.dismiss(animated: true, completion: nil)
-        let geoRegion = GeoRegion(coordinate: coordinate, radius: radius, identifier: identifier, note: note, eventType: eventType)
+        let maxDistance = locationManager.maximumRegionMonitoringDistance
+        let geoRegion = GeoRegion(coordinate: coordinate, radius: maxDistance, identifier: identifier, note: note, eventType: eventType)
         self.addToGeoRegionArrayBasedOnEventType(geoRegion: geoRegion)
+        startMonitoring(geoRegion: geoRegion)
         self.saveAllGeoRegions()
     }
 
@@ -195,6 +197,54 @@ extension GeoRegionsOnMapViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         self.mapView.showsUserLocation = (status == .authorizedAlways)
     }
+    
+    func startMonitoring(geoRegion: GeoRegion) {
+        if CLLocationManager.authorizationStatus() != .authorizedAlways {
+            print("Always authorisation is required for region monitoring")
+            return
+        }
+        if CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) {
+            let region = CLCircularRegion(center: geoRegion.coordinate, radius: geoRegion.radius, identifier: geoRegion.identifier)
+            region.notifyOnEntry = (geoRegion.eventType == .onEntry)
+            region.notifyOnExit = (geoRegion.eventType == .onExit)
+            locationManager.startMonitoring(for: region)
+        }
+        
+    }
+    
+    func stopMonitoring(geoRegion: GeoRegion) {
+        for region in locationManager.monitoredRegions {
+            guard let circularRegion = region as? CLCircularRegion,
+                circularRegion.identifier == geoRegion.identifier else { continue }
+            locationManager.stopMonitoring(for: circularRegion)
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?,withError error: Error) {
+        print("Monitoring failed for region with identifier: \(region!.identifier)")
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+        if region is CLCircularRegion {
+            let alertVC = UIAlertController(title: "Notification", message: "Entered region with \(region.identifier)", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertVC.addAction(okAction)
+            self.present(alertVC, animated: true, completion: nil)
+            print("Entered:  Geofence triggered!")
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        if region is CLCircularRegion {
+            let alertVC = UIAlertController(title: "Notification", message: "Exit from region with \(region.identifier)", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertVC.addAction(okAction)
+            self.present(alertVC, animated: true, completion: nil)
+            print("Exit:  Geofence triggered!")
+        }
+    }
+
+
 }
 
 // MARK: - MapView Delegate Methods
@@ -233,10 +283,10 @@ extension GeoRegionsOnMapViewController: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         if let geoRegion = view.annotation as? GeoRegion {
             print(geoRegion.identifier)
+            stopMonitoring(geoRegion: geoRegion)
             removeFromGeoRegionArrayBasedOnEventType(geoRegion: geoRegion)
         }
         saveAllGeoRegions()
     }
-    
 }
 
