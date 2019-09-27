@@ -10,19 +10,21 @@ import UIKit
 import MapKit
 
 protocol AddGeoRegionDelegate {
-    func addGeoRegionViewController(_ controller: AddGeoRegionViewController, didAddCoordinate coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType)
+    func addGeoRegionViewController(coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType)
 }
 
 class AddGeoRegionViewController: UIViewController {
     
-    @IBOutlet weak var txtRadius: UITextField!
-    @IBOutlet weak var txtNote: UITextView!
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var btnEntry: UIButton!
-    @IBOutlet weak var btnExit: UIButton!
+    // MARK: Private IBOutlets
+    @IBOutlet weak private var txtRadius: UITextField!
+    @IBOutlet weak private var txtNote: UITextView!
+    @IBOutlet weak private var mapView: MKMapView!
+    @IBOutlet weak private var btnEntry: UIButton!
+    @IBOutlet weak private var btnExit: UIButton!
     
+    // MARK: Class properties
     var delegate: AddGeoRegionDelegate?
-    var coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D() {
+    private var coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D() {
         willSet(newValue) {
             let allAnnotations = self.mapView.annotations
             self.mapView.removeAnnotations(allAnnotations)
@@ -32,21 +34,22 @@ class AddGeoRegionViewController: UIViewController {
         }
     }
     
+    // MARK: View controller life cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
         self.btnEntry.isSelected = true
         self.btnExit.isSelected = false
         self.mapView.showsUserLocation = true
-        
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(mapViewTapped))
         self.mapView.addGestureRecognizer(tapGesture)
     }
 
-    @IBAction func btnCloseTapped(sender: AnyObject) {
+    // MARK: IBActions
+    @IBAction private func btnCloseTapped(sender: AnyObject) {
         dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func btnEventTypeTapped(sender: UIButton) {
+    @IBAction private func btnEventTypeTapped(sender: UIButton) {
         if sender.tag == 0 {
             self.btnEntry.isSelected = true
             self.btnEntry.setImage(#imageLiteral(resourceName: "filledRadioBtnImage"), for: .normal)
@@ -61,22 +64,22 @@ class AddGeoRegionViewController: UIViewController {
     }
     
     @IBAction private func btnSaveTapped(sender: AnyObject) {
-        let coordinate = self.coordinate //mapView.centerCoordinate
+        let coordinate = self.coordinate
         let radius = Double(txtRadius.text!) ?? 0
         let identifier = NSUUID().uuidString
         let note = txtNote.text
         let entryType = self.btnEntry.isSelected ? EventType.onEntry : EventType.onExit
-        delegate?.addGeoRegionViewController(self, didAddCoordinate: coordinate, radius: radius, identifier: identifier, note: note!, eventType: entryType)
+        delegate?.addGeoRegionViewController(coordinate: coordinate, radius: radius, identifier: identifier, note: note!, eventType: entryType)
+        self.dismiss(animated: true, completion: nil)
     }
     
     @IBAction private func btnZoomToCurrentLocationTapped(sender: AnyObject) {
         mapView.zoomToUserLocation()
     }
     
-    @objc func mapViewTapped(gestureReconizer: UITapGestureRecognizer) {
+    @objc private func mapViewTapped(gestureReconizer: UITapGestureRecognizer) {
         let location = gestureReconizer.location(in: mapView)
         self.coordinate = mapView.convert(location,toCoordinateFrom: mapView)
-        
     }
 }
 

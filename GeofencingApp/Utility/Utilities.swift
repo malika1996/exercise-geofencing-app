@@ -19,7 +19,6 @@ extension UITextView {
         self.layer.borderColor = UIColor.darkGray.cgColor
         self.layer.borderWidth = 1.0
     }
-    
 }
 
 extension MKMapView {

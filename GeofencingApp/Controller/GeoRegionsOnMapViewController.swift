@@ -13,21 +13,34 @@ import CoreLocation
 
 class GeoRegionsOnMapViewController: UIViewController {
     
-    @IBOutlet weak var mapView: MKMapView!
-    @IBOutlet weak var segmentedControlBar: UISegmentedControl!
-    @IBOutlet weak var lblRegionsCount: UILabel!
+    // MARK: PRivate IBOutlets
+    @IBOutlet weak private var mapView: MKMapView!
+    @IBOutlet weak private var segmentedControlBar: UISegmentedControl!
+    @IBOutlet weak private var lblRegionsCount: UILabel!
     
-    @IBAction func btnAddRegionTapped(_ sender: UIButton) {
+    // MARK: Actions methods
+    @IBAction private func btnAddRegionTapped(_ sender: UIButton) {
         if let vc = self.storyboard?.instantiateViewController(withIdentifier: "AddGeoRegionViewController") as? AddGeoRegionViewController {
             vc.delegate = self
             self.present(vc, animated: true, completion: nil)
         }
     }
+
+    @objc private func segmentedBarValueChanged(sender: UISegmentedControl) {
+        self.updateOnMap()
+    }
+    
+    @IBAction private func zoomToCurrentLocation(sender: AnyObject) {
+        self.mapView.zoomToUserLocation()
+    }
+    
+    // MARK: Class properties
     var allGeoRegions: [GeoRegion] = []
     var entryGeoRegions: [GeoRegion] = []
     var exitGeoRegions: [GeoRegion] = []
     let locationManager = CLLocationManager()
     
+    // MARK: View controller life cycle methods
     override func viewDidLoad() {
         super.viewDidLoad()
         self.segmentedControlBar.addTarget(self, action: #selector(self.segmentedBarValueChanged), for: .valueChanged)
@@ -36,15 +49,16 @@ class GeoRegionsOnMapViewController: UIViewController {
         self.loadAllGeoRegions()
         self.filterGeoRegionsBasedOnEventType()
         self.updateOnMap()
+        self.mapView.showsUserLocation = true
     }
     
     // MARK: Loading and saving functions
-    func loadAllGeoRegions() {
+    private func loadAllGeoRegions() {
         self.allGeoRegions.removeAll()
         self.allGeoRegions = GeoRegion.allGeoRegions()
     }
     
-    func filterGeoRegionsBasedOnEventType() {
+    private func filterGeoRegionsBasedOnEventType() {
         for geoRegion in self.allGeoRegions {
             if geoRegion.eventType == .onEntry {
                 self.entryGeoRegions.append(geoRegion)
@@ -54,7 +68,7 @@ class GeoRegionsOnMapViewController: UIViewController {
         }
     }
     
-    func saveAllGeoRegions() {
+    private func saveAllGeoRegions() {
         let encoder = JSONEncoder()
         do {
             let data = try encoder.encode(self.allGeoRegions)
@@ -62,65 +76,63 @@ class GeoRegionsOnMapViewController: UIViewController {
         } catch {
             print("error encoding GeoRegions")
         }
-        
     }
     
-    @objc func segmentedBarValueChanged(sender: UISegmentedControl) {
-        self.updateOnMap()
-    }
-    
-    // MARK: Update Functions
-    func updateOnMap() {
+    private func updateOnMap() {
         switch self.segmentedControlBar.selectedSegmentIndex {
         case 0:
-            self.allGeoRegions.forEach(addOnMap(_:))
+            self.allGeoRegions.forEach({addOnMap(geoRegion: $0)})
             self.lblRegionsCount.text = "Regions(\(self.allGeoRegions.count))"
         case 1:
-            self.entryGeoRegions.forEach(addOnMap(_:))
-            self.exitGeoRegions.forEach(removeFromMap(_:))
+            self.entryGeoRegions.forEach({addOnMap(geoRegion: $0)})
+            self.exitGeoRegions.forEach({removeFromMap(geoRegion: $0)})
             self.lblRegionsCount.text = "Regions(\(self.entryGeoRegions.count))"
         case 2:
-            self.exitGeoRegions.forEach(addOnMap(_:))
-            self.entryGeoRegions.forEach(removeFromMap(_:))
+            self.exitGeoRegions.forEach({addOnMap(geoRegion: $0)})
+            self.entryGeoRegions.forEach({removeFromMap(geoRegion: $0)})
             self.lblRegionsCount.text = "Regions(\(self.exitGeoRegions.count))"
         default:
             break
         }
     }
     
-    func addToGeoRegionArrayBasedOnEventType(geoRegion: GeoRegion) {
+    private func addToGeoRegionArrayBasedOnEventType(geoRegion: GeoRegion) {
         self.allGeoRegions.append(geoRegion)
         if geoRegion.eventType == .onEntry {
             self.entryGeoRegions.append(geoRegion)
         } else {
             self.exitGeoRegions.append(geoRegion)
         }
-        
+        self.addToMapBasedOnEventType(geoRegion: geoRegion)
+    }
+    
+    private func addToMapBasedOnEventType(geoRegion: GeoRegion) {
         switch self.segmentedControlBar.selectedSegmentIndex {
         case 0:
-            self.addOnMap(geoRegion)
+            self.addOnMap(geoRegion: geoRegion)
+            self.lblRegionsCount.text = "Regions(\(self.allGeoRegions.count))"
         case 1:
             if geoRegion.eventType == .onEntry {
-                self.addOnMap(geoRegion)
+                self.addOnMap(geoRegion: geoRegion)
+                self.lblRegionsCount.text = "Regions(\(self.entryGeoRegions.count))"
             }
         case 2:
             if geoRegion.eventType == .onExit {
-                self.addOnMap(geoRegion)
+                self.addOnMap(geoRegion: geoRegion)
+                self.lblRegionsCount.text = "Regions(\(self.exitGeoRegions.count))"
             }
         default:
             break
         }
     }
     
-    func addOnMap(_ geoRegion: GeoRegion) {
+    private func addOnMap(geoRegion: GeoRegion) {
         self.mapView.addAnnotation(geoRegion)
         addRadiusOverlay(forGeoRegion: geoRegion)
     }
     
-    func removeFromGeoRegionArrayBasedOnEventType(geoRegion: GeoRegion) {
+    private func removeFromGeoRegionArrayBasedOnEventType(geoRegion: GeoRegion) {
         guard let index = allGeoRegions.firstIndex(of: geoRegion) else { return }
-        print(index)
-        print(geoRegion.identifier)
         self.allGeoRegions.remove(at: index)
         if geoRegion.eventType == .onEntry {
             guard let i = entryGeoRegions.firstIndex(of: geoRegion) else { return }
@@ -130,37 +142,40 @@ class GeoRegionsOnMapViewController: UIViewController {
             self.exitGeoRegions.remove(at: i)
         }
         
+        self.removeFromMapBasedOnEventType(geoRegion: geoRegion)
+    }
+    
+    private func removeFromMapBasedOnEventType(geoRegion: GeoRegion) {
         switch self.segmentedControlBar.selectedSegmentIndex {
         case 0:
-            removeFromMap(geoRegion)
+            removeFromMap(geoRegion: geoRegion)
             self.lblRegionsCount.text = "Regions(\(self.allGeoRegions.count))"
         case 1:
             if geoRegion.eventType == .onEntry {
-                removeFromMap(geoRegion)
+                removeFromMap(geoRegion: geoRegion)
                 self.lblRegionsCount.text = "Regions(\(self.entryGeoRegions.count))"
             }
         case 2:
             if geoRegion.eventType == .onExit {
-                removeFromMap(geoRegion)
+                removeFromMap(geoRegion: geoRegion)
                 self.lblRegionsCount.text = "Regions(\(self.exitGeoRegions.count))"
             }
         default:
             break
         }
-        
     }
     
-    func removeFromMap(_ geoRegion: GeoRegion) {
+    private func removeFromMap(geoRegion: GeoRegion) {
         mapView.removeAnnotation(geoRegion)
         removeRadiusOverlay(forGeoRegion: geoRegion)
     }
     
     // MARK: Map overlay functions
-    func addRadiusOverlay(forGeoRegion geoRegion: GeoRegion) {
-        mapView?.addOverlay(MKCircle(center: geoRegion.coordinate, radius: geoRegion.radius))
+    private func addRadiusOverlay(forGeoRegion geoRegion: GeoRegion) {
+        mapView.addOverlay(MKCircle(center: geoRegion.coordinate, radius: geoRegion.radius))
     }
     
-    func removeRadiusOverlay(forGeoRegion geoRegion: GeoRegion) {
+    private func removeRadiusOverlay(forGeoRegion geoRegion: GeoRegion) {
         guard let overlays = mapView?.overlays else { return }
         for overlay in overlays {
             guard let circleOverlay = overlay as? MKCircle else { continue }
@@ -171,33 +186,22 @@ class GeoRegionsOnMapViewController: UIViewController {
             }
         }
     }
-    
-    @IBAction func zoomToCurrentLocation(sender: AnyObject) {
-        self.mapView.zoomToUserLocation()
-    }
-    
 }
 
 // MARK: Conforming AddGeoRegionViewControllerDelegate
 extension GeoRegionsOnMapViewController: AddGeoRegionDelegate {
-
-    func addGeoRegionViewController(_ controller: AddGeoRegionViewController, didAddCoordinate coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType) {
-        controller.dismiss(animated: true, completion: nil)
-        let maxDistance = locationManager.maximumRegionMonitoringDistance
+    func addGeoRegionViewController(coordinate: CLLocationCoordinate2D, radius: Double, identifier: String, note: String, eventType: EventType) {
+        //can only monitor upto maximumREgionMonitoringDistance provided by location delegate
+        let maxDistance = min(radius, locationManager.maximumRegionMonitoringDistance)
         let geoRegion = GeoRegion(coordinate: coordinate, radius: maxDistance, identifier: identifier, note: note, eventType: eventType)
         self.addToGeoRegionArrayBasedOnEventType(geoRegion: geoRegion)
         startMonitoring(geoRegion: geoRegion)
         self.saveAllGeoRegions()
     }
-
 }
 
 // MARK: - Location Manager Delegate Methods
 extension GeoRegionsOnMapViewController: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        self.mapView.showsUserLocation = (status == .authorizedAlways)
-    }
-    
     func startMonitoring(geoRegion: GeoRegion) {
         if CLLocationManager.authorizationStatus() != .authorizedAlways {
             print("Always authorisation is required for region monitoring")
@@ -209,7 +213,6 @@ extension GeoRegionsOnMapViewController: CLLocationManagerDelegate {
             region.notifyOnExit = (geoRegion.eventType == .onExit)
             locationManager.startMonitoring(for: region)
         }
-        
     }
     
     func stopMonitoring(geoRegion: GeoRegion) {
@@ -243,21 +246,19 @@ extension GeoRegionsOnMapViewController: CLLocationManagerDelegate {
             print("Exit:  Geofence triggered!")
         }
     }
-
-
 }
 
 // MARK: - MapView Delegate Methods
 extension GeoRegionsOnMapViewController: MKMapViewDelegate {
-    
+
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let identifier = "myGeoRegion"
-        if annotation is GeoRegion {
+        if annotation is GeoRegion { //To ensure it is not a user location annotation
             var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifier) as? MKPinAnnotationView
             if annotationView == nil {
                 annotationView = MKPinAnnotationView(annotation: annotation, reuseIdentifier: identifier)
                 annotationView?.canShowCallout = true
-                let removeButton = UIButton(type: .custom)
+                let removeButton = UIButton()
                 removeButton.frame = CGRect(x: 0, y: 0, width: 23, height: 23)
                 removeButton.setImage(#imageLiteral(resourceName: "deleteImage"), for: .normal)
                 annotationView?.leftCalloutAccessoryView = removeButton
@@ -268,7 +269,7 @@ extension GeoRegionsOnMapViewController: MKMapViewDelegate {
         }
         return nil
     }
-    
+
     func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
         if overlay is MKCircle {
             let circleRenderer = MKCircleRenderer(overlay: overlay)
@@ -279,7 +280,7 @@ extension GeoRegionsOnMapViewController: MKMapViewDelegate {
         }
         return MKOverlayRenderer(overlay: overlay)
     }
-    
+
     func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         if let geoRegion = view.annotation as? GeoRegion {
             print(geoRegion.identifier)
