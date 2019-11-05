@@ -24,6 +24,7 @@ class AddGeoRegionViewController: UIViewController {
     
     // MARK: Class properties
     var delegate: AddGeoRegionDelegate?
+    private var firstResponder: UITextField?
     private var coordinate: CLLocationCoordinate2D = CLLocationCoordinate2D() {
         willSet(newValue) {
             let allAnnotations = self.mapView.annotations
@@ -42,6 +43,10 @@ class AddGeoRegionViewController: UIViewController {
         self.mapView.showsUserLocation = true
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(mapViewTapped))
         self.mapView.addGestureRecognizer(tapGesture)
+        self.txtRadius.keyboardType = .decimalPad
+        self.addToolbarToKeyboard()
+        self.txtNote.delegate = self
+        self.txtRadius.delegate = self
     }
 
     // MARK: IBActions
@@ -81,5 +86,32 @@ class AddGeoRegionViewController: UIViewController {
         let location = gestureReconizer.location(in: mapView)
         self.coordinate = mapView.convert(location,toCoordinateFrom: mapView)
     }
+    
+    @objc private func btnDoneTapped(sender: UIButton) {
+        self.firstResponder?.resignFirstResponder()
+    }
+    
+    private func addToolbarToKeyboard() {
+        let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+        let btnDone = UIBarButtonItem(title: "done", style: .done, target: self, action: #selector(self.btnDoneTapped(sender:)))
+        toolbar.setItems([btnDone], animated: true)
+        self.txtRadius.inputAccessoryView = toolbar
+    }
 }
 
+extension AddGeoRegionViewController: UITextFieldDelegate {
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        textField.becomeFirstResponder()
+        self.firstResponder = textField
+    }
+}
+
+extension AddGeoRegionViewController: UITextViewDelegate {
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            textView.resignFirstResponder()
+            return false
+        }
+        return true
+    }
+}

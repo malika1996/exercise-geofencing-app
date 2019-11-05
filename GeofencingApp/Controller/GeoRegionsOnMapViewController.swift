@@ -50,6 +50,7 @@ class GeoRegionsOnMapViewController: UIViewController {
         self.filterGeoRegionsBasedOnEventType()
         self.updateOnMap()
         self.mapView.showsUserLocation = true
+        self.mapView.zoomToUserLocation()
     }
     
     // MARK: Loading and saving functions
