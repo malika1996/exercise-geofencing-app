@@ -17,21 +17,29 @@ class GeoRegionsOnMapViewController: UIViewController {
     @IBOutlet weak private var mapView: MKMapView!
     @IBOutlet weak private var segmentedControlBar: UISegmentedControl!
     @IBOutlet weak private var lblRegionsCount: UILabel!
-    
+        
     // MARK: Actions methods
     @IBAction private func btnAddRegionTapped(_ sender: UIButton) {
-        if let vc = self.storyboard?.instantiateViewController(withIdentifier: "AddGeoRegionViewController") as? AddGeoRegionViewController {
-            vc.delegate = self
-            self.present(vc, animated: true, completion: nil)
+        if CLLocationManager.authorizationStatus() == .denied || CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+            self.showAlert(message: "This app requires access to Location. Please grant the Always Use permission in Settings")
+        } else {
+            if self.allGeoRegions.count >= 20 {
+                self.showAlert(message: "Oops! Can't add more than 20 regions for region monitoring")
+            } else {
+                if let vc = self.storyboard?.instantiateViewController(withIdentifier: "AddGeoRegionViewController") as? AddGeoRegionViewController {
+                    vc.delegate = self
+                    self.present(vc, animated: true, completion: nil)
+                }
+            }
         }
-    }
-
-    @objc private func segmentedBarValueChanged(sender: UISegmentedControl) {
-        self.updateOnMap()
     }
     
     @IBAction private func zoomToCurrentLocation(sender: AnyObject) {
         self.mapView.zoomToUserLocation()
+    }
+
+    @objc private func segmentedBarValueChanged(sender: UISegmentedControl) {
+        self.updateOnMap()
     }
     
     // MARK: Class properties
@@ -45,13 +53,25 @@ class GeoRegionsOnMapViewController: UIViewController {
         super.viewDidLoad()
         self.segmentedControlBar.addTarget(self, action: #selector(self.segmentedBarValueChanged), for: .valueChanged)
         self.locationManager.delegate = self
-        self.locationManager.requestAlwaysAuthorization()
+        self.checkLocationAuthorizationStatus()
+        self.locationManager.desiredAccuracy = kCLLocationAccuracyBest
         self.loadAllGeoRegions()
         self.filterGeoRegionsBasedOnEventType()
         self.updateOnMap()
-        self.mapView.showsUserLocation = true
-        self.mapView.zoomToUserLocation()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        self.mapView.showAnnotations(self.mapView.annotations, animated: true)
+    }
+    
+    // MARK: Private methods
+    private func showAlert(message: String) {
+        let alertVC = UIAlertController(title: "Warning", message: message, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+        alertVC.addAction(okAction)
+        self.present(alertVC, animated: true, completion: nil)
+    }
+    
     
     // MARK: Loading and saving functions
     private func loadAllGeoRegions() {
@@ -95,6 +115,7 @@ class GeoRegionsOnMapViewController: UIViewController {
         default:
             break
         }
+        self.mapView.showAnnotations(self.mapView.annotations, animated: true)
     }
     
     private func addToGeoRegionArrayBasedOnEventType(geoRegion: GeoRegion) {
@@ -142,7 +163,6 @@ class GeoRegionsOnMapViewController: UIViewController {
             guard let i = exitGeoRegions.firstIndex(of: geoRegion) else { return }
             self.exitGeoRegions.remove(at: i)
         }
-        
         self.removeFromMapBasedOnEventType(geoRegion: geoRegion)
     }
     
@@ -201,10 +221,13 @@ extension GeoRegionsOnMapViewController: AddGeoRegionDelegate {
     }
 }
 
-// MARK: - Location Manager Delegate Methods
+// MARK: Location Manager Delegate Methods
 extension GeoRegionsOnMapViewController: CLLocationManagerDelegate {
     func startMonitoring(geoRegion: GeoRegion) {
-        if CLLocationManager.authorizationStatus() != .authorizedAlways {
+        if CLLocationManager.authorizationStatus() == .denied {
+            self.showAlert(message: "This app requires access to Location. Please grant the Always Use permission in Settings")
+        }
+        else if CLLocationManager.authorizationStatus() != .authorizedAlways {
             print("Always authorisation is required for region monitoring")
             return
         }
@@ -247,11 +270,28 @@ extension GeoRegionsOnMapViewController: CLLocationManagerDelegate {
             print("Exit:  Geofence triggered!")
         }
     }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        if status == .authorizedAlways {
+            mapView.showsUserLocation = true
+            locationManager.startUpdatingLocation()
+            self.mapView.showAnnotations(self.mapView.annotations, animated: true)
+        }
+    }
+    
+    private func checkLocationAuthorizationStatus() {
+        if CLLocationManager.authorizationStatus() == .authorizedAlways {
+            mapView.showsUserLocation = true
+            locationManager.startUpdatingLocation()
+            self.mapView.showAnnotations(self.mapView.annotations, animated: true)
+        } else {
+            locationManager.requestAlwaysAuthorization()
+        }
+    }
 }
 
-// MARK: - MapView Delegate Methods
+// MARK: MapView Delegate Methods
 extension GeoRegionsOnMapViewController: MKMapViewDelegate {
-
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let identifier = "myGeoRegion"
         if annotation is GeoRegion { //To ensure it is not a user location annotation

@@ -48,8 +48,12 @@ class AddGeoRegionViewController: UIViewController {
         self.txtNote.delegate = self
         self.txtRadius.delegate = self
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        self.mapView.zoomToUserLocation()
+    }
 
-    // MARK: IBActions
+    // MARK: IBActions, ObjC private methods
     @IBAction private func btnCloseTapped(sender: AnyObject) {
         dismiss(animated: true, completion: nil)
     }
