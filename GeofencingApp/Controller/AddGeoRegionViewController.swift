@@ -53,7 +53,7 @@ class AddGeoRegionViewController: UIViewController {
         self.mapView.zoomToUserLocation()
     }
 
-    // MARK: IBActions, ObjC private methods
+    // MARK: IBActions, ObjC methods
     @IBAction private func btnCloseTapped(sender: AnyObject) {
         dismiss(animated: true, completion: nil)
     }
@@ -95,6 +95,7 @@ class AddGeoRegionViewController: UIViewController {
         self.firstResponder?.resignFirstResponder()
     }
     
+    // MARK: Class Private methods
     private func addToolbarToKeyboard() {
         let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
         let btnDone = UIBarButtonItem(title: "done", style: .done, target: self, action: #selector(self.btnDoneTapped(sender:)))

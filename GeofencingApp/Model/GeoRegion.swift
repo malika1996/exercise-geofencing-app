@@ -19,7 +19,6 @@ enum CodingKeys: String, CodingKey {
 }
 
 class GeoRegion: NSObject, MKAnnotation, Codable {
-    
     var coordinate: CLLocationCoordinate2D
     var radius: CLLocationDistance
     var identifier: String
