@@ -27,7 +27,7 @@ class GeoRegionsOnMapViewController: UIViewController {
             } else {
                 if let vc = self.storyboard?.instantiateViewController(withIdentifier: "AddGeoRegionViewController") as? AddGeoRegionViewController {
                     vc.delegate = self
-                    self.present(vc, animated: true, completion: nil)
+                    self.navigationController?.pushViewController(vc, animated: true)
                 }
             }
         }

@@ -55,7 +55,7 @@ class AddGeoRegionViewController: UIViewController {
 
     // MARK: IBActions, ObjC methods
     @IBAction private func btnCloseTapped(sender: AnyObject) {
-        dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction private func btnEventTypeTapped(sender: UIButton) {
@@ -76,10 +76,17 @@ class AddGeoRegionViewController: UIViewController {
         let coordinate = self.coordinate
         let radius = Double(txtRadius.text!) ?? 0
         let identifier = NSUUID().uuidString
-        let note = txtNote.text
-        let entryType = self.btnEntry.isSelected ? EventType.onEntry : EventType.onExit
-        delegate?.addGeoRegionViewController(coordinate: coordinate, radius: radius, identifier: identifier, note: note!, eventType: entryType)
-        self.dismiss(animated: true, completion: nil)
+        let note = txtNote.text ?? ""
+        if note.isEmpty {
+            let alertVC = UIAlertController(title: "Warning", message: "Please provide a relevant note", preferredStyle: .alert)
+            let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+            alertVC.addAction(okAction)
+            self.present(alertVC, animated: true, completion: nil)
+        } else {
+            let entryType = self.btnEntry.isSelected ? EventType.onEntry : EventType.onExit
+            delegate?.addGeoRegionViewController(coordinate: coordinate, radius: radius, identifier: identifier, note: note, eventType: entryType)
+            self.navigationController?.popViewController(animated: true)
+        }
     }
     
     @IBAction private func btnZoomToCurrentLocationTapped(sender: AnyObject) {
